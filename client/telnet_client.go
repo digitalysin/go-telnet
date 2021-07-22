@@ -47,10 +47,10 @@ func resolveTCPAddr(addr string) *net.TCPAddr {
 }
 
 // ProcessData method processes data: reads from input and writes to output.
-func (t *TelnetClient) ProcessData(inputData io.Reader, outputData io.Writer) {
+func (t *TelnetClient) ProcessData(inputData io.Reader, outputData io.Writer) error {
 	connection, error := net.DialTCP("tcp", nil, t.destination)
 	if nil != error {
-		log.Fatalf("Error occured while connecting to address \"%v\": %v\n", t.destination.String(), error)
+		return fmt.Errorf("Error occured while connecting to address \"%v\": %v\n", t.destination.String(), error)
 	}
 
 	defer connection.Close()
@@ -70,7 +70,7 @@ func (t *TelnetClient) ProcessData(inputData io.Reader, outputData io.Writer) {
 		select {
 		case request := <-requestDataChannel:
 			if _, error := connection.Write(request); nil != error {
-				log.Fatalf("Error occured while writing to TCP socket: %v\n", error)
+				return fmt.Errorf("Error occured while writing to TCP socket: %v\n", error)
 			}
 		case <-doneChannel:
 			afterEOFMode = true
@@ -85,9 +85,9 @@ func (t *TelnetClient) ProcessData(inputData io.Reader, outputData io.Writer) {
 			}
 		case <-afterEOFResponseTicker.C:
 			if !somethingRead {
-				log.Println("Nothing read. Maybe connection timeout.")
+				return fmt.Errorf("Nothing read. Maybe connection timeout.")
 			}
-			return
+			return nil
 		}
 	}
 }
