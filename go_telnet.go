@@ -1,10 +1,11 @@
 package main
 
 import (
+	"log"
 	"os"
 
-	"github.com/mtojek/go-telnet/client"
-	"github.com/mtojek/go-telnet/commandline"
+	"github.com/digitalysin/go-telnet/client"
+	"github.com/digitalysin/go-telnet/commandline"
 )
 
 type goTelnet struct{}
@@ -15,7 +16,9 @@ func newGoTelnet() *goTelnet {
 
 func (g *goTelnet) run() {
 	telnetClient := g.createTelnetClient()
-	telnetClient.ProcessData(os.Stdin, os.Stdout)
+	if err := telnetClient.ProcessData(os.Stdin, os.Stdout); err != nil {
+		log.Fatalf("%s", err)
+	}
 }
 
 func (g *goTelnet) createTelnetClient() *client.TelnetClient {

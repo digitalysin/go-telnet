@@ -7,4 +7,5 @@ type Options interface {
 	Host() string
 	Port() uint64
 	Timeout() time.Duration
+	DialTimeout() time.Duration
 }

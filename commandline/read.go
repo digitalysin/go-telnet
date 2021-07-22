@@ -11,6 +11,7 @@ func Read() *CommandLine {
 	host := kingpin.Arg("host", "Target host").Required().String()
 	port := kingpin.Arg("port", "Target port").Required().Uint64()
 	timeout := kingpin.Flag("timeout", "Byte receiving timeout after the input EOF occurs").Short('t').Default("1s").Duration()
+	dialTimeout := kingpin.Flag("dial-timeout", "timeout dialing to telnet server").Short('d').Default("10s").Duration()
 
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("1.0").Author("Marcin Tojek")
 	kingpin.CommandLine.Name = "go-telnet"
@@ -19,9 +20,10 @@ func Read() *CommandLine {
 	kingpin.Parse()
 
 	return &CommandLine{
-		host:    *host,
-		port:    *port,
-		timeout: *timeout,
+		host:        *host,
+		port:        *port,
+		timeout:     *timeout,
+		dialTimeout: *dialTimeout,
 	}
 }
 

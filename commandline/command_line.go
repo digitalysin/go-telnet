@@ -4,9 +4,10 @@ import "time"
 
 // CommandLine type represents options read from command line arguments.
 type CommandLine struct {
-	host    string
-	port    uint64
-	timeout time.Duration
+	host        string
+	port        uint64
+	timeout     time.Duration
+	dialTimeout time.Duration
 }
 
 // Host method returns a given host.
@@ -22,4 +23,8 @@ func (c *CommandLine) Port() uint64 {
 // Timeout method returns a given server response timeout after EOF of input file.
 func (c *CommandLine) Timeout() time.Duration {
 	return c.timeout
+}
+
+func (c *CommandLine) DialTimeout() time.Duration {
+	return c.dialTimeout
 }
