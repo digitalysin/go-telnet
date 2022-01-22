@@ -17,18 +17,29 @@ type TelnetClient struct {
 	destination     *net.TCPAddr
 	responseTimeout time.Duration
 	dialTimeout     time.Duration
+	connection      net.Conn
 }
 
 // NewTelnetClient method creates new instance of TCP client.
-func NewTelnetClient(options Options) *TelnetClient {
+func NewTelnetClient(options Options) (*TelnetClient, error) {
 	tcpAddr := createTCPAddr(options)
 	resolved := resolveTCPAddr(tcpAddr)
+
+	var (
+		addr      = fmt.Sprintf("%s:%d", resolved.IP, resolved.Port)
+		conn, err = net.DialTimeout("tcp", addr, options.DialTimeout())
+	)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &TelnetClient{
 		destination:     resolved,
 		responseTimeout: options.Timeout(),
 		dialTimeout:     options.DialTimeout(),
-	}
+		connection:      conn,
+	}, nil
 }
 
 func createTCPAddr(options Options) string {
@@ -48,16 +59,15 @@ func resolveTCPAddr(addr string) *net.TCPAddr {
 	return resolved
 }
 
+func (t *TelnetClient) Close() error {
+	return t.connection.Close()
+}
+
 // ProcessData method processes data: reads from input and writes to output.
 func (t *TelnetClient) ProcessData(inputData io.Reader, outputData io.Writer) error {
-	addr := fmt.Sprintf("%s:%d", t.destination.IP, t.destination.Port)
-	connection, err := net.DialTimeout("tcp", addr, t.dialTimeout)
-
-	if nil != err {
-		return fmt.Errorf("Error occured while connecting to address \"%v\": %v\n", t.destination.String(), err)
-	}
-
-	defer connection.Close()
+	var (
+		connection = t.connection
+	)
 
 	requestDataChannel := make(chan []byte)
 	doneChannel := make(chan bool)
